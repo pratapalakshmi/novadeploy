@@ -1,0 +1,25 @@
+# Root Application (App-of-Apps). Apply once via: kubectl apply -f apps/root.yaml
+# Set spec.source.repoURL to your Git repo URL before applying.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:pratapalakshmi/novadeploy.git
+    targetRevision: main
+    path: apps
+    directory:
+      recurse: true
+      exclude: root.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

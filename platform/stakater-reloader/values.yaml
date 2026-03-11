@@ -1,0 +1,2 @@
+# Stakater Reloader — watch ConfigMaps/Secrets and restart workloads when they change.
+# Annotate Deployments/StatefulSets with reloader.stakater.com/auto: "true" to enable.

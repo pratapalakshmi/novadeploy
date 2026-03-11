@@ -1,0 +1,2 @@
+# cert-manager — install CRDs so ESO and other operators can use Certificate/Issuer
+installCRDs: true

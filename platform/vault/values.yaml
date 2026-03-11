@@ -1,0 +1,17 @@
+# Vault dev mode — in-memory, auto-unsealed. For local/Docker Desktop only.
+global:
+  enabled: true
+
+server:
+  dev:
+    enabled: true
+  standalone:
+    enabled: false
+  ha:
+    enabled: false
+  replicas: 1
+
+# Expose service for ESO and other in-cluster consumers
+ui:
+  enabled: true
+  serviceType: ClusterIP
