@@ -151,6 +151,7 @@ DB_USER=apitemp
 ```bash
 kubectl exec -n vault vault-0 -- vault kv put secret/demo/app appname=novadeploy db_host=postgres db_user=api
 ```
+<img width="1883" height="267" alt="Screenshot 2026-03-12 at 05 10 27" src="https://github.com/user-attachments/assets/3178beaa-0379-4cf7-ae10-1aa5c238ab44" />
 
 **3. After rotation** — wait up to 1 minute for ESO refresh, then Reloader restarts the deployment. New pod has updated values:
 
