@@ -25,3 +25,13 @@ spec:
                 secretKeyRef:
                   name: app-config
                   key: appname
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-config
+                  key: db_host
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-config
+                  key: db_user
