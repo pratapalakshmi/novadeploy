@@ -1,25 +1,20 @@
-# Deploys ClusterSecretStore (ESO → Vault) after ESO is ready (wave 3).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault-secret-store
+  name: demo-prod
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: default
   source:
     repoURL: git@github.com:pratapalakshmi/novadeploy.git
     targetRevision: main
-    path: platform/external-secrets
-    directory:
-      include: vault-secret-store.yaml
+    path: platform/overlays/prod
   destination:
     server: https://kubernetes.default.svc
+    namespace: demo-prod
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     retry:
       limit: 5
       backoff:

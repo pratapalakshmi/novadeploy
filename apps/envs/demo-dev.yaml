@@ -1,26 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault
+  name: demo-dev
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: default
-  sources:
-    - repoURL: https://helm.releases.hashicorp.com
-      chart: vault
-      targetRevision: "0.27.0"
-      helm:
-        releaseName: vault
-        valueFiles:
-          - $values/platform/vault/values.yaml
-    - repoURL: git@github.com:pratapalakshmi/novadeploy.git
-      targetRevision: main
-      ref: values
+  source:
+    repoURL: git@github.com:pratapalakshmi/novadeploy.git
+    targetRevision: main
+    path: platform/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: vault
+    namespace: demo-dev
   syncPolicy:
     automated:
       prune: true

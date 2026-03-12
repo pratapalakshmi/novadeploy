@@ -6,6 +6,7 @@ metadata:
   namespace: demo
   annotations:
     reloader.stakater.com/auto: "true"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 1
   selector:
@@ -35,3 +36,10 @@ spec:
                 secretKeyRef:
                   name: app-config
                   key: db_user
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
