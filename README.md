@@ -22,6 +22,23 @@ The root Application points at the `apps/` directory. ArgoCD applies every manif
 - **Wave 3** — ClusterSecretStore (ESO → Vault)
 - **Wave 4** — Demo app (nginx + ExternalSecret)
 
+### Health-based blocking (recommended)
+
+Argo CD **waits for each wave to become Healthy** before applying the next wave — but only for resource kinds that have a health check defined. To prevent the "secret not there" failure (apps starting before the K8s Secret exists), configure custom health checks so that:
+
+- **ClusterSecretStore** is Healthy only when the store is validated (Ready).
+- **ExternalSecret** is Healthy only when the Secret has been synced (Ready).
+- **Application** (child apps) is Healthy when its sync and resources are healthy, so the root app waits for e.g. vault-secret-store before creating the demo app.
+
+Apply the provided ConfigMap once to the cluster where Argo CD runs, then restart the application controller:
+
+```bash
+kubectl apply -f platform/argocd/argocd-cm-health.yaml
+kubectl rollout restart deployment argocd-application-controller -n argocd
+```
+
+After that, sync waves will not proceed until resources in the current wave are Healthy. If the ExternalSecret is Degraded (e.g. Vault not seeded), the demo app wave will not apply until it is fixed.
+
 ---
 
 ## Design Document
@@ -60,7 +77,7 @@ How this platform prevents the four incidents described in the assignment:
 
 | Incident | How we prevent it |
 |----------|-------------------|
-| **Secret not there (CrashLoopBackOff)** | Sync waves ensure ESO (wave 2) and ClusterSecretStore (wave 3) deploy before the demo app (wave 4). ESO creates the K8s Secret before the Deployment runs. ExternalSecret refreshes every 1m. |
+| **Secret not there (CrashLoopBackOff)** | Sync waves plus **health checks** (see `platform/argocd/argocd-cm-health.yaml`): Argo CD waits for ClusterSecretStore and ExternalSecret to be Healthy before applying Postgres and the app. The app wave does not apply until the K8s Secret exists. |
 | **CRD race (no matches for kind)** | cert-manager and ESO install their CRDs in wave 1–2. ClusterSecretStore (wave 3) and demo ExternalSecret (wave 4) apply only after ESO CRDs exist. |
 | **Phantom edit reverted** | Root Application has `selfHeal: true`; ArgoCD continuously reconciles from Git and reverts any `kubectl edit` back to the desired state. |
 | **Shared secret blast radius** | Each service uses its own ExternalSecret pointing at distinct Vault paths (or keys). Stakater Reloader restarts only workloads annotated with `reloader.stakater.com/auto: "true"` when their referenced Secret changes. |
@@ -81,13 +98,19 @@ How this platform prevents the four incidents described in the assignment:
 
 ## Bootstrap
 
-With ArgoCD already installed and this repo connected, deploy the full platform with:
+With ArgoCD already installed and this repo connected:
 
-```bash
-kubectl apply -f apps/root.yaml
-```
+1. **Enable health-based blocking (recommended)** so waves wait for Healthy before proceeding:
+   ```bash
+   kubectl apply -f platform/argocd/argocd-cm-health.yaml
+   kubectl rollout restart deployment argocd-application-controller -n argocd
+   ```
+2. **Deploy the platform:**
+   ```bash
+   kubectl apply -f apps/root.yaml
+   ```
 
-ArgoCD will sync the root app and then all child apps in wave order.
+ArgoCD will sync the root app and then all child apps in wave order. With the health ConfigMap applied, it will not start the next wave until the current one is Healthy.
 
 ---
 

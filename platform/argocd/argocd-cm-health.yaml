@@ -1,0 +1,100 @@
+# Argo CD resource health customizations for health-based sync wave blocking.
+# Apply once to the cluster where Argo CD runs (e.g. after installing Argo CD).
+# This merges with existing argocd-cm; if argocd-cm does not exist, it will be created.
+#
+# Without these, Argo CD may proceed to the next sync wave before resources are
+# actually healthy (e.g. ExternalSecret before the K8s Secret exists), which can
+# cause CrashLoopBackOff (Incident #1). With these, Argo CD waits for Healthy
+# before applying the next wave.
+#
+# Apply: kubectl apply -f platform/argocd/argocd-cm-health.yaml
+# Then restart Argo CD application controller to pick up changes:
+#   kubectl rollout restart deployment argocd-application-controller -n argocd
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Application health: so root app-of-apps waits for child Applications (e.g.
+  # vault-secret-store-dev) to be Healthy before applying the next wave (e.g. demo-dev).
+  resource.customizations.health.argoproj.io_Application: |
+    hs = {}
+    hs.status = "Progressing"
+    hs.message = ""
+    if obj.status ~= nil then
+      if obj.status.health ~= nil then
+        hs.status = obj.status.health.status
+        if obj.status.health.message ~= nil then
+          hs.message = obj.status.health.message
+        end
+      end
+      if obj.status.sync ~= nil and obj.status.sync.status ~= nil and obj.status.sync.status == "OutOfSync" then
+        hs.status = "Progressing"
+        hs.message = "Sync " .. (hs.message or "out of sync")
+      end
+    end
+    return hs
+
+  # ExternalSecret: Healthy only when the Secret has been synced (Ready=True).
+  # In the demo app, "demo-app-secret" creates the "app-config" Secret (db_user,
+  # db_password, db_host, appname) that Postgres and python-app depend on. Argo CD
+  # waits for this ExternalSecret to be Healthy before applying wave 1+ (Postgres,
+  # migrate job, python-app), so the required secret exists before those workloads start.
+  resource.customizations.health.external-secrets.io_ExternalSecret: |
+    hs = {}
+    if obj.status == nil or obj.status.conditions == nil then
+      hs.status = "Progressing"
+      hs.message = "ExternalSecret initializing"
+      return hs
+    end
+    for i, condition in ipairs(obj.status.conditions) do
+      if condition.type == "Ready" then
+        if condition.status == "True" then
+          hs.status = "Healthy"
+          if obj.status.refreshTime ~= nil then
+            hs.message = "Secret synced. Last refresh: " .. obj.status.refreshTime
+          else
+            hs.message = "Secret synced"
+          end
+          return hs
+        else
+          hs.status = "Degraded"
+          hs.message = condition.message or condition.reason or "ExternalSecret not ready"
+          return hs
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for Ready condition"
+    return hs
+
+  # ClusterSecretStore: Healthy when store is validated (Ready=True). Ensures
+  # wave 3 is Healthy before demo app (wave 4) syncs, so ExternalSecrets can sync.
+  resource.customizations.health.external-secrets.io_ClusterSecretStore: |
+    hs = {}
+    if obj.status == nil or obj.status.conditions == nil then
+      hs.status = "Progressing"
+      hs.message = "ClusterSecretStore initializing"
+      return hs
+    end
+    for i, condition in ipairs(obj.status.conditions) do
+      if condition.type == "Ready" then
+        if condition.status == "True" then
+          hs.status = "Healthy"
+          hs.message = condition.message or "Store validated"
+          return hs
+        else
+          hs.status = "Degraded"
+          hs.message = condition.message or "Store not ready"
+          return hs
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for Ready condition"
+    return hs
