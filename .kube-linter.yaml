@@ -4,10 +4,8 @@ checks:
     - run-as-non-root
     - unset-memory-requirements
     - unset-cpu-requirements
-    - no-read-only-root-filesystem
     - host-network
     - host-pid
-    - no-latest-tag
 
 exceptions:
   # Example: allow Vault dev mode or other third-party charts if needed.
