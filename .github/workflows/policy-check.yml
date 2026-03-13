@@ -35,7 +35,8 @@ jobs:
 
       - name: Detect deprecated and removed APIs
         run: |     
-          pluto detect-files -d platform -d apps --target-versions 1.29
+          pluto detect-files -d platform -d apps
+          pluto detect-files -d platform -d platform
 
   secret-scan:
     name: Secret scanning (gitleaks)
