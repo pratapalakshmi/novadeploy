@@ -32,9 +32,7 @@ jobs:
 
       - name: Install Pluto
         run: |
-          curl -sSL https://github.com/FairwindsOps/pluto/releases/latest/download/pluto_linux_amd64 -o pluto
-          chmod +x pluto
-          sudo mv pluto /usr/local/bin/
+          curl -sSL https://raw.githubusercontent.com/FairwindsOps/pluto/main/install.sh | bash
 
       - name: Detect deprecated and removed APIs
         run: |
