@@ -22,6 +22,8 @@ spec:
         - name: python-app
           image: novadeploy/python-app:latest
           imagePullPolicy: Never
+          securityContext:
+            readOnlyRootFilesystem: true
           command:
             - python
             - -m

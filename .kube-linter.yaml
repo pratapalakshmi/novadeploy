@@ -1,0 +1,20 @@
+checks:
+  include:
+    - privilege-escalation-container
+    - run-as-non-root
+    - unset-memory-requirements
+    - unset-cpu-requirements
+    - host-network
+    - host-pid
+    - latest-tag
+    - no-read-only-root-fs
+
+exceptions:
+  # Example: allow Vault dev mode or other third-party charts if needed.
+  # - id: allow-vault-dev
+  #   name: "Allow Vault dev mode pods to deviate from some policies"
+  #   scope:
+  #     namespace: "vault"
+  #   checks:
+  #     - run-as-non-root
+  #     - no-read-only-root-filesystem
