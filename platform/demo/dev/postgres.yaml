@@ -40,6 +40,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+            - name: run
+              mountPath: /var/run/postgresql
           resources:
             requests:
               cpu: "50m"
@@ -49,6 +51,8 @@ spec:
               memory: "256Mi"
       volumes:
         - name: data
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
