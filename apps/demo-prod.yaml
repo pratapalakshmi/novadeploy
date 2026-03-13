@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: git@github.com:pratapalakshmi/novadeploy.git
     targetRevision: main
-    path: platform/overlays/prod
+    path: platform/demo/prod
   destination:
-    server: https://kubernetes.default.svc
-    namespace: demo-prod
+    server: https://<PROD_CLUSTER_API_URL>
+    namespace: demo
   syncPolicy:
     retry:
       limit: 5
@@ -23,3 +23,4 @@ spec:
         maxDuration: 3m
     syncOptions:
       - CreateNamespace=true
+

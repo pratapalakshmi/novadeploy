@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-demo
+  namespace: demo
+  annotations:
+    reloader.stakater.com/auto: "true"
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-demo
+  template:
+    metadata:
+      labels:
+        app: nginx-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.25
+          env:
+            - name: APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-config
+                  key: appname
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-config
+                  key: db_host
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-config
+                  key: db_user
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+

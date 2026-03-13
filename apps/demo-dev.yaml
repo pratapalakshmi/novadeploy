@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: demo-staging
+  name: demo-dev
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "4"
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: git@github.com:pratapalakshmi/novadeploy.git
     targetRevision: main
-    path: platform/overlays/staging
+    path: platform/demo/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: demo-staging
+    namespace: demo
   syncPolicy:
     automated:
       prune: true
