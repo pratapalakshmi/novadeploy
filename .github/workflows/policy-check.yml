@@ -32,8 +32,8 @@ jobs:
 
       - name: Install Pluto
         run: |
-          curl -sSL https://github.com/FairwindsOps/pluto/releases/latest/download/pluto_linux_amd64.tar.gz -o pluto.tar.gz
-          tar -xzf pluto.tar.gz
+          curl -sSL https://github.com/FairwindsOps/pluto/releases/latest/download/pluto_linux_amd64 -o pluto
+          chmod +x pluto
           sudo mv pluto /usr/local/bin/
 
       - name: Detect deprecated and removed APIs
