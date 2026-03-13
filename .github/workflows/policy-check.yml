@@ -22,3 +22,33 @@ jobs:
       - name: Run kube-linter on manifests
         run: |
           kube-linter lint platform apps --config .kube-linter.yaml
+
+  deprecated-api:
+    name: Deprecated Kubernetes APIs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Pluto
+        uses: FairwindsOps/pluto/github-action@master
+
+      - name: Detect deprecated and removed APIs
+        run: |     
+          pluto detect-files -d platform -d apps
+          pluto detect-files -d platform -d platform
+
+  secret-scan:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          # For GitHub orgs, add a free license: GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
