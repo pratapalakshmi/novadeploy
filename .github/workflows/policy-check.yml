@@ -30,14 +30,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Pluto
-        run: |
-          curl -sSL https://raw.githubusercontent.com/FairwindsOps/pluto/main/install.sh | bash
+      - name: Download Pluto
+        uses: FairwindsOps/pluto/github-action@master
 
       - name: Detect deprecated and removed APIs
-        run: |
+        run: |     
           pluto detect-files -d platform -d apps --target-version 1.29
-        # Fail the job if any deprecated or removed APIs are found
 
   secret-scan:
     name: Secret scanning (gitleaks)
