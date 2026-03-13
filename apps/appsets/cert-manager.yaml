@@ -11,8 +11,8 @@ spec:
         elements:
           - env: dev
             server: https://kubernetes.default.svc
-          - env: prod
-            server: https://<PROD_CLUSTER_API_URL>
+          # - env: prod
+          #   server: https://<PROD_CLUSTER_API_URL>
   template:
     metadata:
       name: "cert-manager-{{env}}"
