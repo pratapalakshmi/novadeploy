@@ -116,13 +116,17 @@ The demo app uses **per-environment** Vault paths:
 
 - Dev: `secret/data/dev/app`
 
-Each path must contain keys `appname`, `db_host`, and `db_user`. Seed them with a `kubectl exec` command — the values stay on your machine, not in Git.
+Each path must contain keys `appname`, `db_host`, `db_user`, and `db_password`. Seed them with a `kubectl exec` command — the values stay on your machine, not in Git.
 
 The HashiCorp Vault Helm chart runs Vault as a **StatefulSet** (pod `vault-0`). Use:
 
 ```bash
 kubectl exec -n vault vault-0 -- \
-  vault kv put secret/dev/app appname=novadeploy db_host=postgres db_user=api
+  vault kv put secret/dev/app \
+    appname=novadeploy \
+    db_host=postgres \
+    db_user=api \
+    db_password=devpassword
 ```
 
 If your install uses a Deployment instead of a StatefulSet, replace `vault-0` with `deploy/vault`.
@@ -145,10 +149,15 @@ DB_HOST=postgres
 DB_USER=apitemp
 ```
 
-**2. Rotate in Vault:**
+**2. Rotate in Vault (example):**
 
 ```bash
-kubectl exec -n vault vault-0 -- vault kv put secret/demo/app appname=novadeploy db_host=postgres db_user=api
+kubectl exec -n vault vault-0 -- \
+  vault kv put secret/dev/app \
+    appname=novadeploy \
+    db_host=postgres \
+    db_user=api \
+    db_password=devpassword
 ```
 
 **3. After rotation** — wait up to 1 minute for ESO refresh, then Reloader restarts the deployment. New pod has updated values:
@@ -165,3 +174,15 @@ DB_USER=api
 ```
 
 `STAKATER_APP_CONFIG_SECRET` is an env var added by Stakater Reloader (hash of the watched Secret); it changes when the Secret updates.
+
+---
+
+## Python demo app (FastAPI + Postgres)
+
+To build the local image used by the migration Job and Deployment:
+
+```bash
+docker build -t novadeploy/python-app:latest ./docker_python_app
+```
+
+Because this runs on Docker Desktop, Kubernetes can use the locally built image with `imagePullPolicy: Never`.
