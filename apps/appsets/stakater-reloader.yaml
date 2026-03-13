@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: stakater-reloader
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            server: https://kubernetes.default.svc
+          # - env: prod
+          #   server: https://<PROD_CLUSTER_API_URL>
+  template:
+    metadata:
+      name: "stakater-reloader-{{env}}"
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+    spec:
+      project: default
+      sources:
+        - repoURL: https://stakater.github.io/stakater-charts
+          chart: reloader
+          targetRevision: "1.0.26"
+          helm:
+            releaseName: reloader
+            valueFiles:
+              - $values/platform/stakater-reloader/values.yaml
+        - repoURL: git@github.com:pratapalakshmi/novadeploy.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: "{{server}}"
+        namespace: stakater
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: 5
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m
+        syncOptions:
+          - CreateNamespace=true
+

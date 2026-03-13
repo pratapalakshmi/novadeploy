@@ -1,4 +1,3 @@
-# nginx Deployment using app-config secret; Stakater Reloader restarts on secret change.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,6 +5,7 @@ metadata:
   namespace: demo
   annotations:
     reloader.stakater.com/auto: "true"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 1
   selector:
@@ -35,3 +35,11 @@ spec:
                 secretKeyRef:
                   name: app-config
                   key: db_user
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+

@@ -1,0 +1,26 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: demo-prod
+#   namespace: argocd
+#   annotations:
+#     argocd.argoproj.io/sync-wave: "4"
+# spec:
+#   project: default
+#   source:
+#     repoURL: git@github.com:pratapalakshmi/novadeploy.git
+#     targetRevision: main
+#     path: platform/demo/prod
+#   destination:
+#     server: https://<PROD_CLUSTER_API_URL>
+#     namespace: demo
+#   syncPolicy:
+#     retry:
+#       limit: 5
+#       backoff:
+#         duration: 10s
+#         factor: 2
+#         maxDuration: 3m
+#     syncOptions:
+#       - CreateNamespace=true
+
