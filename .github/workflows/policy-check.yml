@@ -1,0 +1,25 @@
+name: Policy checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  kube-linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install kube-linter
+        run: |
+          curl -L https://github.com/stackrox/kube-linter/releases/download/v0.6.8/kube-linter-linux-amd64.tar.gz \
+            | tar xz
+          sudo mv kube-linter /usr/local/bin
+
+      - name: Run kube-linter on manifests
+        run: |
+          kube-linter lint platform apps --config .kube-linter.yaml
+

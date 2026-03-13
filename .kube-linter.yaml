@@ -1,0 +1,32 @@
+checks:
+  include:
+    - privilege-escalation-container
+    - run-as-non-root
+    - required-labels
+    - unset-memory-requirements
+    - unset-cpu-requirements
+    - no-read-only-root-fs  # optional, can be relaxed later
+    - host-network
+    - host-pid
+    - latest-tag
+
+customChecks:
+  # Enforce that every container has both requests and limits for CPU and memory.
+  - name: resources-required
+    template: "require_resources"
+    params:
+      cpuLimitRequired: true
+      cpuRequestRequired: true
+      memoryLimitRequired: true
+      memoryRequestRequired: true
+
+exceptions:
+  # Example: allow Vault dev mode or other third-party charts if needed.
+  # - id: allow-vault-dev
+  #   name: "Allow Vault dev mode pods to deviate from some policies"
+  #   scope:
+  #     namespace: "vault"
+  #   checks:
+  #     - run-as-non-root
+  #     - no-read-only-root-fs
+

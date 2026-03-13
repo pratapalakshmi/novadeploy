@@ -177,6 +177,24 @@ DB_USER=api
 
 ---
 
+## CI policy enforcement
+
+Deployment standards are enforced automatically in **GitHub Actions**, not just via code review:
+
+- Workflow: `.github/workflows/policy-check.yml`
+- Tool: `kube-linter` with repo-local config `.kube-linter.yaml`
+
+On every push and pull request to `main`, kube-linter runs against all manifests under `platform/` and `apps/` and fails the build if it detects:
+
+- Containers running as root (missing `runAsNonRoot` / using UID 0)
+- Images with no tag or using `:latest`
+- Pods without CPU/memory requests and limits
+- Pods using `hostNetwork` or `hostPID`
+
+New standards are rolled out by first adding rules in warning-only mode (non-blocking), fixing existing workloads, and then making the workflow a required status check for the `main` branch so that misconfigurations cannot be merged.
+
+---
+
 ## Python demo app (FastAPI + Postgres)
 
 To build the local image used by the migration Job and Deployment:
