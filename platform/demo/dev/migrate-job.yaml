@@ -6,6 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
+  ttlSecondsAfterFinished: 300
   backoffLimit: 3
   template:
     metadata:
@@ -21,6 +22,8 @@ spec:
           image: novadeploy/python-app:latest
           imagePullPolicy: Never
           command: ["python", "-m", "alembic", "upgrade", "head"]
+          securityContext:
+            readOnlyRootFilesystem: true
           env:
             - name: DB_USER
               valueFrom:
@@ -39,4 +42,10 @@ spec:
                   key: db_host
             - name: DATABASE_URL
               value: postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/demo
-
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

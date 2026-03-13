@@ -6,6 +6,8 @@ checks:
     - unset-cpu-requirements
     - host-network
     - host-pid
+    - latest-tag
+    - no-read-only-root-fs
 
 exceptions:
   # Example: allow Vault dev mode or other third-party charts if needed.
